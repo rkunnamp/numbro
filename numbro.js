@@ -396,6 +396,50 @@
         return Number(seconds);
     }
 
+    function groupNumber (number) {
+        var separator = cultures[currentCulture].delimiters.thousands;
+        var format  = cultures[currentCulture].delimiters.groupFormat;
+        var str = number.toString();
+        var result = '';
+        var groups = format.split(separator);
+        if ((groups.length > 0) && (str.length > 0)) {
+            var i = groups.length - 1;
+            var n;
+            while ((i >= 0) && (str.length > 0)) {
+                var group = groups[i];
+                n = group.length;
+                var last_digits = str.substring(str.length-n);
+                var first_digits = str.substring(0,str.length-n);
+                if (last_digits.length > 0) {
+                    if (result.length >0) {
+                       result = last_digits + separator + result;
+                    }
+                    else {
+                     result = last_digits;
+                    }
+                }
+                str = first_digits;
+                i = i - 1;
+            }
+            if (str.length > 0) {
+                var re = "(\\d)(?=(\\d{" + n + "})+(?!\\d))";
+                var regex = new RegExp(re,"g");
+                var res = str.replace(regex, '$1'+separator);
+                if (result.length > 0 ) {
+                    result = res + separator + result;
+                }
+                else {
+                    result = res;
+                }
+            }
+
+        }
+        else {
+           result = str;
+        }
+        return result;
+    }
+
     function formatNumber (value, format, roundingFunction, sep) {
         var negP = false,
             signed = false,
@@ -663,8 +707,13 @@
         }
 
         if (thousands > -1) {
-            w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' +
-                cultures[currentCulture].delimiters.thousands);
+            if (cultures[currentCulture].delimiters.groupFormat) {
+                w = groupNumber(w);
+            }
+            else {
+                w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' +
+                    cultures[currentCulture].delimiters.thousands);
+            }
         }
 
         if (format.indexOf('.') === 0) {
