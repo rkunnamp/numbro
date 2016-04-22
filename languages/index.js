@@ -3,6 +3,7 @@ exports['da-DK'] = require('./da-DK.js');
 exports['de-CH'] = require('./de-CH.js');
 exports['de-DE'] = require('./de-DE.js');
 exports['en-GB'] = require('./en-GB.js');
+exports['en-IN'] = require('./en-IN.js');
 exports['en-ZA'] = require('./en-ZA.js');
 exports['es-AR'] = require('./es-AR.js');
 exports['es-ES'] = require('./es-ES.js');

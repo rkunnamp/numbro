@@ -235,7 +235,7 @@
                     ((stringOriginal.match(millionRegExp)) ? Math.pow(10, 6) : 1) *
                     ((stringOriginal.match(billionRegExp)) ? Math.pow(10, 9) : 1) *
                     ((stringOriginal.match(trillionRegExp)) ? Math.pow(10, 12) : 1) *
-                    ((string.indexOf('%') > -1) ? 0.01 : 1) *
+                    ((string.indexOf('%') > -1) ? 1 : 1) *
                     (((string.split('-').length +
                         Math.min(string.split('(').length - 1, string.split(')').length - 1)) % 2) ? 1 : -1) *
                     Number(string.replace(/[^0-9\.]+/g, ''));
@@ -344,7 +344,7 @@
     function formatPercentage(n, format, roundingFunction) {
         var space = '',
             output,
-            value = n._value * 100;
+            value = n._value;
 
         // check for space before %
         if (format.indexOf(' %') > -1) {
@@ -396,12 +396,55 @@
         return Number(seconds);
     }
 
+    function groupNumber (number) {
+        var separator = cultures[currentCulture].delimiters.thousands;
+        var format  = cultures[currentCulture].delimiters.groupFormat;
+        var str = number.toString();
+        var result = '';
+        var groups = format.split(separator);
+        if ((groups.length > 0) && (str.length > 0)) {
+            var i = groups.length - 1;
+            var n;
+            while ((i >= 0) && (str.length > 0)) {
+                var group = groups[i];
+                n = group.length;
+                var lastDigits = str.substring(str.length-n);
+                var firstDigits = str.substring(0,str.length-n);
+                if (lastDigits.length > 0) {
+                    if (result.length >0) {
+                        result = lastDigits + separator + result;
+                    }
+                    else {
+                        result = lastDigits;
+                    }
+                }
+                str = firstDigits;
+                i = i - 1;
+            }
+            if (str.length > 0) {
+                var re = '(\\d)(?=(\\d{' + n + '})+(?!\\d))';
+                var regex = new RegExp(re,'g');
+                var res = str.replace(regex, '$1'+separator);
+                if (result.length > 0 ) {
+                    result = res + separator + result;
+                }
+                else {
+                    result = res;
+                }
+            }
+
+        }
+        else {
+            result = str;
+        }
+        return result;
+    }
+
     function formatNumber (value, format, roundingFunction, sep) {
         var negP = false,
             signed = false,
             optDec = false,
             abbr = '',
-            i,
             abbrK = false, // force abbreviation to thousands
             abbrM = false, // force abbreviation to millions
             abbrB = false, // force abbreviation to billions
@@ -526,9 +569,7 @@
                     size = length === 0 ? 0 : 3 * ~~(length / 3) - length;
                     size = size < 0 ? size + 3 : size;
 
-                    for (i = 0; i < size; i++) {
-                        format += '0';
-                    }
+                    format += zeroes(size);
                 }
             }
 
@@ -662,12 +703,17 @@
         }
 
         if (w.length < minlen) {
-            w = new Array(minlen - w.length + 1).join('0') + w;
+            w = zeroes(minlen - w.length) + w;
         }
 
         if (thousands > -1) {
-            w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' +
-                cultures[currentCulture].delimiters.thousands);
+            if (cultures[currentCulture].delimiters.groupFormat) {
+                w = groupNumber(w);
+            }
+            else {
+                w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' +
+                    cultures[currentCulture].delimiters.thousands);
+            }
         }
 
         if (format.indexOf('.') === 0) {
@@ -744,7 +790,7 @@
     /**
      * This function allow the user to set a new culture with a fallback if
      * the culture does not exist. If no fallback culture is provided,
-     * it fallbacks to "en-US".
+     * it falls back to "en-US".
      */
     numbro.setCulture = function(newCulture, fallbackCulture) {
         var key = newCulture,

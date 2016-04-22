@@ -235,7 +235,7 @@
                     ((stringOriginal.match(millionRegExp)) ? Math.pow(10, 6) : 1) *
                     ((stringOriginal.match(billionRegExp)) ? Math.pow(10, 9) : 1) *
                     ((stringOriginal.match(trillionRegExp)) ? Math.pow(10, 12) : 1) *
-                    ((string.indexOf('%') > -1) ? 0.01 : 1) *
+                    ((string.indexOf('%') > -1) ? 1 : 1) *
                     (((string.split('-').length +
                         Math.min(string.split('(').length - 1, string.split(')').length - 1)) % 2) ? 1 : -1) *
                     Number(string.replace(/[^0-9\.]+/g, ''));
@@ -344,7 +344,7 @@
     function formatPercentage(n, format, roundingFunction) {
         var space = '',
             output,
-            value = n._value * 100;
+            value = n._value;
 
         // check for space before %
         if (format.indexOf(' %') > -1) {
@@ -408,22 +408,22 @@
             while ((i >= 0) && (str.length > 0)) {
                 var group = groups[i];
                 n = group.length;
-                var last_digits = str.substring(str.length-n);
-                var first_digits = str.substring(0,str.length-n);
-                if (last_digits.length > 0) {
+                var lastDigits = str.substring(str.length-n);
+                var firstDigits = str.substring(0,str.length-n);
+                if (lastDigits.length > 0) {
                     if (result.length >0) {
-                       result = last_digits + separator + result;
+                        result = lastDigits + separator + result;
                     }
                     else {
-                     result = last_digits;
+                        result = lastDigits;
                     }
                 }
-                str = first_digits;
+                str = firstDigits;
                 i = i - 1;
             }
             if (str.length > 0) {
-                var re = "(\\d)(?=(\\d{" + n + "})+(?!\\d))";
-                var regex = new RegExp(re,"g");
+                var re = '(\\d)(?=(\\d{' + n + '})+(?!\\d))';
+                var regex = new RegExp(re,'g');
                 var res = str.replace(regex, '$1'+separator);
                 if (result.length > 0 ) {
                     result = res + separator + result;
@@ -435,7 +435,7 @@
 
         }
         else {
-           result = str;
+            result = str;
         }
         return result;
     }

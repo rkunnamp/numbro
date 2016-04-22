@@ -128,7 +128,6 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask('build', [
-        'test',
         'languages',
         'copy:main',
         'concat',
